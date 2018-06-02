@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 buildscript {
-    ext.kotlin_version = '1.2.21'
+    ext.kotlin_version = '1.2.41'
 
     repositories {
         jcenter()
@@ -26,6 +26,6 @@ android {
 
 dependencies {
     provided 'com.facebook.react:react-native:+'
-    compile 'com.amap.api:3dmap:6.1.0'
+    compile 'com.amap.api:3dmap:6.2.0'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
