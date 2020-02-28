@@ -37,11 +37,11 @@ class AMapView(context: Context) : TextureMapView(context) {
                 marker.active = false
             }
 
-            emit(id, "onPress", latLng.toWritableMap())
+            emit(id, "onClick", latLng.toWritableMap())
         }
 
         map.setOnMapLongClickListener { latLng ->
-            emit(id, "onLongPress", latLng.toWritableMap())
+            emit(id, "onLongClick", latLng.toWritableMap())
         }
 
         map.setOnMyLocationChangeListener { location ->
@@ -50,17 +50,25 @@ class AMapView(context: Context) : TextureMapView(context) {
             event.putDouble("longitude", location.longitude)
             event.putDouble("accuracy", location.accuracy.toDouble())
             event.putDouble("altitude", location.altitude)
+            event.putDouble("heading", location.bearing.toDouble())
             event.putDouble("speed", location.speed.toDouble())
-            event.putInt("timestamp", location.time.toInt())
+            event.putDouble("timestamp", location.time.toDouble())
             emit(id, "onLocation", event)
         }
 
         map.setOnMarkerClickListener { marker ->
             markers[marker.id]?.let {
                 it.active = true
-                emit(it.id, "onPress")
+                emit(it.id, "onClick")
             }
             true
+        }
+
+        map.setOnPOIClickListener { poi ->
+            val data = poi.coordinate.toWritableMap()
+            data.putString("id", poi.poiId)
+            data.putString("name", poi.name)
+            emit(id, "onClick", data)
         }
 
         map.setOnMarkerDragListener(object : AMap.OnMarkerDragListener {
@@ -92,14 +100,14 @@ class AMapView(context: Context) : TextureMapView(context) {
         }
 
         map.setOnPolylineClickListener { polyline ->
-            emit(lines[polyline.id]?.id, "onPress")
+            emit(lines[polyline.id]?.id, "onClick")
         }
 
         map.setOnMultiPointClickListener { item ->
             val slice = item.customerId.split("_")
             val data = Arguments.createMap()
             data.putInt("index", slice[1].toInt())
-            emit(slice[0].toInt(), "onItemPress", data)
+            emit(slice[0].toInt(), "onItemClick", data)
             false
         }
 
@@ -108,22 +116,20 @@ class AMapView(context: Context) : TextureMapView(context) {
 
     fun emitCameraChangeEvent(event: String, position: CameraPosition?) {
         position?.let {
-            val data = it.target.toWritableMap()
+            val data = Arguments.createMap()
+            data.putMap("center", it.target.toWritableMap())
             data.putDouble("zoomLevel", it.zoom.toDouble())
             data.putDouble("tilt", it.tilt.toDouble())
             data.putDouble("rotation", it.bearing.toDouble())
             if (event == "onStatusChangeComplete") {
-                val southwest = map.projection.visibleRegion.latLngBounds.southwest
-                val northeast = map.projection.visibleRegion.latLngBounds.northeast
-                data.putDouble("latitudeDelta", Math.abs(southwest.latitude - northeast.latitude))
-                data.putDouble("longitudeDelta", Math.abs(southwest.longitude - northeast.longitude))
+                data.putMap("region", map.projection.visibleRegion.latLngBounds.toWritableMap());
             }
             emit(id, event, data)
         }
     }
 
-    fun emit(id: Int?, name: String, data: WritableMap = Arguments.createMap()) {
-        id?.let { eventEmitter.receiveEvent(it, name, data) }
+    fun emit(id: Int?, event: String, data: WritableMap = Arguments.createMap()) {
+        id?.let { eventEmitter.receiveEvent(it, event, data) }
     }
 
     fun add(child: View) {
@@ -162,32 +168,32 @@ class AMapView(context: Context) : TextureMapView(context) {
 
     fun animateTo(args: ReadableArray?) {
         val currentCameraPosition = map.cameraPosition
-        val target = args?.getMap(0)!!
+        val status = args?.getMap(0)!!
         val duration = args.getInt(1)
 
-        var coordinate = currentCameraPosition.target
+        var center = currentCameraPosition.target
         var zoomLevel = currentCameraPosition.zoom
         var tilt = currentCameraPosition.tilt
         var rotation = currentCameraPosition.bearing
 
-        if (target.hasKey("coordinate")) {
-            coordinate = target.getMap("coordinate").toLatLng()
+        if (status.hasKey("center")) {
+            center = status.getMap("center")!!.toLatLng()
         }
 
-        if (target.hasKey("zoomLevel")) {
-            zoomLevel = target.getDouble("zoomLevel").toFloat()
+        if (status.hasKey("zoomLevel")) {
+            zoomLevel = status.getDouble("zoomLevel").toFloat()
         }
 
-        if (target.hasKey("tilt")) {
-            tilt = target.getDouble("tilt").toFloat()
+        if (status.hasKey("tilt")) {
+            tilt = status.getDouble("tilt").toFloat()
         }
 
-        if (target.hasKey("rotation")) {
-            rotation = target.getDouble("rotation").toFloat()
+        if (status.hasKey("rotation")) {
+            rotation = status.getDouble("rotation").toFloat()
         }
 
         val cameraUpdate = CameraUpdateFactory.newCameraPosition(
-                CameraPosition(coordinate, zoomLevel, tilt, rotation))
+                CameraPosition(center, zoomLevel, tilt, rotation))
         map.animateCamera(cameraUpdate, duration.toLong(), animateCallback)
     }
 

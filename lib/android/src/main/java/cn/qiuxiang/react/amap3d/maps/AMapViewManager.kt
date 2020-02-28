@@ -1,9 +1,8 @@
 package cn.qiuxiang.react.amap3d.maps
 
 import android.view.View
-import com.amap.api.maps.AMap
+import cn.qiuxiang.react.amap3d.toLatLng
 import com.amap.api.maps.CameraUpdateFactory
-import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MyLocationStyle
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -15,7 +14,7 @@ import com.facebook.react.uimanager.annotations.ReactProp
 @Suppress("unused")
 internal class AMapViewManager : ViewGroupManager<AMapView>() {
     companion object {
-        val ANIMATE_TO = 1
+        const val SET_STATUS = 1
     }
 
     override fun getName(): String {
@@ -32,12 +31,12 @@ internal class AMapViewManager : ViewGroupManager<AMapView>() {
     }
 
     override fun getCommandsMap(): Map<String, Int> {
-        return mapOf("animateTo" to ANIMATE_TO)
+        return mapOf("setStatus" to SET_STATUS)
     }
 
     override fun receiveCommand(overlay: AMapView, commandId: Int, args: ReadableArray?) {
         when (commandId) {
-            ANIMATE_TO -> overlay.animateTo(args)
+            SET_STATUS -> overlay.animateTo(args)
         }
     }
 
@@ -53,13 +52,13 @@ internal class AMapViewManager : ViewGroupManager<AMapView>() {
 
     override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
         return MapBuilder.of(
-                "onPress", MapBuilder.of("registrationName", "onPress"),
-                "onLongPress", MapBuilder.of("registrationName", "onLongPress"),
-                "onAnimateCancel", MapBuilder.of("registrationName", "onAnimateCancel"),
-                "onAnimateFinish", MapBuilder.of("registrationName", "onAnimateFinish"),
-                "onStatusChange", MapBuilder.of("registrationName", "onStatusChange"),
-                "onStatusChangeComplete", MapBuilder.of("registrationName", "onStatusChangeComplete"),
-                "onLocation", MapBuilder.of("registrationName", "onLocation")
+                "onClick", MapBuilder.of("registrationName", "onAMapClick"),
+                "onLongClick", MapBuilder.of("registrationName", "onAMapLongClick"),
+                "onLocation", MapBuilder.of("registrationName", "onAMapLocation"),
+                "onAnimateCancel", MapBuilder.of("registrationName", "onAMapAnimateCancel"),
+                "onAnimateFinish", MapBuilder.of("registrationName", "onAMapAnimateFinish"),
+                "onStatusChange", MapBuilder.of("registrationName", "onAMapStatusChange"),
+                "onStatusChangeComplete", MapBuilder.of("registrationName", "onAMapStatusChangeComplete")
         )
     }
 
@@ -103,6 +102,11 @@ internal class AMapViewManager : ViewGroupManager<AMapView>() {
         view.map.uiSettings.isScaleControlsEnabled = enabled
     }
 
+    @ReactProp(name = "mapLanguage")
+    fun setLanguage(view: AMapView, mapLanguage:Int) {
+        view.map.setMapLanguage(if(mapLanguage == 1) {"en"} else {"zh_cn"})
+    }
+
     @ReactProp(name = "showsLocationButton")
     fun setMyLocationButtonEnabled(view: AMapView, enabled: Boolean) {
         view.map.uiSettings.isMyLocationButtonEnabled = enabled
@@ -129,14 +133,8 @@ internal class AMapViewManager : ViewGroupManager<AMapView>() {
     }
 
     @ReactProp(name = "mapType")
-    fun setMapType(view: AMapView, mapType: String) {
-        when (mapType) {
-            "standard" -> view.map.mapType = AMap.MAP_TYPE_NORMAL
-            "satellite" -> view.map.mapType = AMap.MAP_TYPE_SATELLITE
-            "navigation" -> view.map.mapType = AMap.MAP_TYPE_NAVI
-            "night" -> view.map.mapType = AMap.MAP_TYPE_NIGHT
-            "bus" -> view.map.mapType = AMap.MAP_TYPE_BUS
-        }
+    fun setMapType(view: AMapView, mapType: Int) {
+        view.map.mapType = mapType + 1
     }
 
     @ReactProp(name = "zoomEnabled")
@@ -159,11 +157,9 @@ internal class AMapViewManager : ViewGroupManager<AMapView>() {
         view.map.uiSettings.isTiltGesturesEnabled = enabled
     }
 
-    @ReactProp(name = "coordinate")
-    fun moveToCoordinate(view: AMapView, coordinate: ReadableMap) {
-        view.map.moveCamera(CameraUpdateFactory.changeLatLng(LatLng(
-                coordinate.getDouble("latitude"),
-                coordinate.getDouble("longitude"))))
+    @ReactProp(name = "center")
+    fun setCenter(view: AMapView, center: ReadableMap) {
+        view.map.moveCamera(CameraUpdateFactory.changeLatLng(center.toLatLng()))
     }
 
     @ReactProp(name = "region")
