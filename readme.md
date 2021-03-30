@@ -3,7 +3,9 @@
 ## 这是一个Fork的项目，修复一些bug。
 
 1.iOS编译报错问题。
+
 2.安卓自定义maker 移除后闪退问题。
+
 3.等。
 
 react-native 高德地图组件，使用最新 3D SDK，支持 Android + iOS，受 [react-native-maps](https://github.com/airbnb/react-native-maps) 启发，提供功能丰富且易用的接口。
