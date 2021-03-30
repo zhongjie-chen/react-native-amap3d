@@ -154,7 +154,7 @@ yarn run-ios
 - 该项目不打算做数据接口，地理/逆地理编码、路径规划、搜索等功能请使用 [Web 服务](https://lbs.amap.com/api/webservice/summary)。
 - 尽量使用设备进行测试，在模拟器可能存在一些问题（常见的是 Android 模拟器因为缺少硬件加速而导致闪退）。
 
-[npm]: https://www.npmjs.com/package/react-native-amap3d
+[npm]: https://www.npmjs.com/package/react-native-hd-amap3d
 [version-badge]: https://badge.fury.io/js/react-native-amap3d.svg
 [build-badge]: https://travis-ci.org/qiuxiang/react-native-amap3d.svg?branch=master
 [build]: https://travis-ci.org/qiuxiang/react-native-amap3d
