@@ -19,10 +19,14 @@ export default class Component<P> extends PureComponent<P> {
    * Call native method
    */
   call(name: string, params?: any[]) {
-    const handle = findNodeHandle(this);
-    if (handle) {
-      const command = UIManager.getViewManagerConfig(this.nativeComponent).Commands[name];
-      UIManager.dispatchViewManagerCommand(handle, command, params);
+    try {
+      const handle = findNodeHandle(this);
+      if (handle) {
+        const command = UIManager.getViewManagerConfig(this.nativeComponent).Commands[name];
+        UIManager.dispatchViewManagerCommand(handle, command, params);
+      }
+    } catch (error) {
+      console.warn(error);
     }
   }
 
@@ -36,7 +40,7 @@ export default class Component<P> extends PureComponent<P> {
         if (Platform.OS === "android") {
           name = name.replace(/^on/, "onAMap");
         }
-        handlers[name] = event => handler(event.nativeEvent);
+        handlers[name] = (event) => handler(event.nativeEvent);
       }
       return handlers;
     }, {});
