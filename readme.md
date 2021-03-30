@@ -1,4 +1,4 @@
-# react-native-hd-amap3d [![npm version][version-badge]][npm] [![build status][build-badge]][build]
+# react-native-hd-amap3d [![npm version]
 
 ## 这是一个Fork的项目，修复一些bug。
 
